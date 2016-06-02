@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
 
+#
+# From a weighted bipartite graph in a Dimacs graph input file, create an
+# "augmented" graph, guaranteed to contain a perfect matching, and output
+# the results to another Dimacs graph file in the specified output directory.
+#
+# See the section on "Perfect Matchings" in the README.
+#
+
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
 
 require "dimacs_graph"
