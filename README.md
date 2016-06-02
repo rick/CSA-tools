@@ -6,7 +6,7 @@ Included here are the following:
 
  - [generate_augmented_graph](https://github.com/rick/CSA-tools/blob/master/bin/generate_augmented_graph) - command-line tooling to take a weighted bipartite graph, contained in a Dimacs-format graph file, and produce an augmented graph in another Dimacs-formatted graph file. The augmented graph is guaranteed to have a perfect matching.
 
- - [convert_matching_to_original_graph](https://github.com/rick/CSA-tools/blob/master/bin/convert_matching_to_original_graph) **TODO** - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analagous matching on the original (unaugmented) graph.
+ - [convert_matching_to_original_graph](https://github.com/rick/CSA-tools/blob/master/bin/convert_matching_to_original_graph) **TODO** - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
 
 ### Perfect Matchings
 
