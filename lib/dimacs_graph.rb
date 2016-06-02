@@ -1,19 +1,20 @@
 class DimacsGraph
-  attr_reader :file, :output_dir, :current_line, :line_count
+  attr_reader :silent, :file, :output_dir, :current_line, :line_count
   attr_reader :problem_node_count, :problem_arc_count
   attr_reader :final_node_count, :final_arc_count
   attr_reader :seen_nodes, :seen_arcs
   attr_reader :results_path
 
   # Process a DimacsGraph file and generate an augmented graph file.
-  def self.process(graph_file, output_dir)
-    processor = self.new
+  def self.process(graph_file, output_dir, silent = false)
+    processor = self.new(silent)
     processor.process graph_file, output_dir
     processor
   end
 
   # Create an instance of the Dimacs Graph processor class; no arguments necessary.
-  def initialize
+  def initialize(silent = false)
+    @silent = silent
   end
 
   # Process the graph data located in the `graph_file` file, using `output_dir`
@@ -22,6 +23,7 @@ class DimacsGraph
   # Returns the path to the augmented graph file.
   def process(graph_file, output_dir)
     raise ArgumentError, "process expects a graph file and an output path" unless graph_file && output_dir
+    raise ArgumentError, "cannot find output directory [#{output_dir}]" unless File.directory?(output_dir)
     @file, @output_dir = graph_file, output_dir
 
     File.open(file) do |f|
@@ -51,6 +53,10 @@ class DimacsGraph
   # input graph file.
   def line_error(message)
     raise "#{message} at [#{file}:#{line_count}]: [#{current_line}]"
+  end
+
+  def message(message)
+    puts message unless silent
   end
 
   # Keep track of the current line in the graph input file (for error message generation).
@@ -240,6 +246,7 @@ class DimacsGraph
     @results_path = File.join(output_dir, "augmented_graph.txt")
     close_output_files
     system "cat #{problem_output_path} #{node_output_path} #{arc_output_path} > #{results_path}" # NOTE: not particularly portable
+    message "Wrote augmented graph file: #{results_path}"
     results_path
   end
 end
