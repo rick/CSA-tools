@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+#
+# From an input file containing a CSA-generated matching, and an original
+# Dimacs-format original (non-augmented) graph file, create a matching for
+# the original graph and output it to the specified output file.
+#
+# See the section on "Perfect Matchings" in the README.
+#
+
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+
+require "matching_translator"
+
+def usage
+  puts "usage: #{$0} <input matching file> <original graph file> <output matching file>"
+  exit 1
+end
+
+matching_file = ARGV.shift or usage
+graph_file = ARGV.shift or usage
+output_file = ARGV.shift or usage
+
+MatchingTranslator.process matching_file, graph_file, output_file
