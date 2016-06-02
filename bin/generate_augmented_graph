@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+
+require "dimacs_graph"
+
+def usage
+  puts "usage: #{$0} <input file> <output directory>"
+  exit 1
+end
+
+input_file = ARGV.shift or usage
+output_dir = ARGV.shift or usage
+
+DimacsGraph.process input_file, output_dir
