@@ -13,7 +13,7 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
 require "matching_translator"
 
 def usage
-  puts "usage: #{$0} <number of source nodes> <input matching file> <output matching file>\n   source nodes must be >= 1"
+  puts "usage: #{$0} <number of source nodes> <number of total nodes> <input matching file> <output matching file>\n"
   exit 1
 end
 
@@ -21,7 +21,12 @@ source_nodes = ARGV.shift or usage
 source_nodes = source_nodes.to_i
 usage unless source_nodes >= 1
 
+total_nodes = ARGV.shift or usage
+total_nodes = total_nodes.to_i
+usage unless total_nodes >= 1
+usage unless total_nodes >= source_nodes
+
 input_file  = ARGV.shift or usage
 output_file = ARGV.shift or usage
 
-MatchingTranslator.process source_nodes, input_file, output_file
+MatchingTranslator.process source_nodes, total_nodes, input_file, output_file

@@ -177,7 +177,7 @@ class DimacsGraph
     # to the output node source list (because it is only a destination).
     augmented_node(source_as_augmented_node(source)) do
       # add a high-cost arc from source to augmented source: source -> source + n
-      output_arc adjusted_source(source), source_as_augmented_node(source), high_cost
+      output_arc adjusted_source(source), source_as_augmented_node(source), unmatchable_cost
     end
 
     # If dest has not been mirrored as an augmented node yet, create a mirror-
@@ -187,7 +187,7 @@ class DimacsGraph
       output_node dest_as_augmented_node(dest)
 
       # add a high-cost arc from augmented node (dest) to original dest node (d + n)
-      output_arc dest_as_augmented_node(dest), adjusted_destination(dest), high_cost
+      output_arc dest_as_augmented_node(dest), adjusted_destination(dest), unmatchable_cost
     end
 
     # add an arc from augmented source (dest+n) to augmented dest (source+n)
@@ -238,8 +238,8 @@ class DimacsGraph
   # What do we output for a high cost node?
   #
   # TODO: this should be configurable by the caller
-  def high_cost
-    1000000000
+  def unmatchable_cost
+    -1000000000
   end
 
   # Allow registering new "augmented nodes".
