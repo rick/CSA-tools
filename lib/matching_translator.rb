@@ -1,40 +1,45 @@
 class MatchingTranslator
-  attr_reader :source_nodes, :total_nodes, :input_file, :output_file
+  attr_reader :source_nodes, :total_nodes, :input_file, :output_file, :silent
 
-  def initialize(source_nodes, total_nodes, input_file, output_file)
+  def initialize(source_nodes, total_nodes, input_file, output_file, silent = false)
     @source_nodes = source_nodes
-    @total_nodes = total_nodes
-    @input_file = input_file
-    @output_file = output_file
+    @total_nodes  = total_nodes
+    @input_file   = input_file
+    @output_file  = output_file
+    @silent       = silent
   end
 
-  def self.process(source_nodes, total_nodes, input_file, output_file)
-    new(source_nodes, total_nodes, input_file, output_file).process
+  def self.process(source_nodes, total_nodes, input_file, output_file, silent = false)
+    new(source_nodes, total_nodes, input_file, output_file, silent).process
   end
 
   def process
-    puts "Processing matching file [#{input_file}]. Original problem had #{source_nodes} source nodes and #{total_nodes} total nodes..."
+    message "Processing matching file [#{input_file}]. Original problem had #{source_nodes} source nodes and #{total_nodes} total nodes..."
     File.open(input_file) do |infile|
       infile.each_line do |line|
-        if line =~ /^f\s+(\d+)\s+(\d+)\s+(\d+)/
+        if line =~ /^f\s+(\d+)\s+(\d+)\s+(-?\d+)/
           source, destination, weight = $1.to_i, $2.to_i, $3.to_i
 
           if is_valid_match?(source, destination, weight)
             output_flow_arc(source, destination, weight)
           else
-            puts "Discarding match [#{source}, #{destination}, #{weight}]"
+            message "Discarding match [#{source}, #{destination}, #{weight}]"
           end
         else
-          puts "Skipping line: [#{line.chomp}]"
+          message "Skipping line: [#{line.chomp}]"
         end
       end
     end
     close_output_files
   end
 
+  def message(message)
+    puts message unless silent
+  end
+
   def output_flow_arc(source, destination, weight)
     new_source, new_destination, new_weight = translate_flow_arc(source, destination, weight)
-    puts "Keeping match [#{source}, #{destination}, #{weight}] -> [#{new_source}, #{new_destination}, #{new_weight}]"
+    message "Keeping match [#{source}, #{destination}, #{weight}] -> [#{new_source}, #{new_destination}, #{new_weight}]"
     output_handle.puts "f #{source} #{destination} #{weight}"
   end
 

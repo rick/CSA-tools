@@ -14,7 +14,7 @@ def normalize_graph_file(contents)
   contents.lines.map {|l| l.chomp.gsub(/\s+/, ' ') }.sort.join("\n")
 end
 
-describe "parsing a DIMACS assignment problem graph file" do
+describe "augmenting a DIMACS assignment problem graph file" do
   before do
     @basedir = Dir.mktmpdir
   end
