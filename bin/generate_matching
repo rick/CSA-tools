@@ -21,25 +21,26 @@ require "graph_augmentor"
 require "matching_translator"
 
 def usage
-  puts "usage: #{$0} <input file> <output file>"
+  puts "usage: #{$0} <input file> <output file>\n
+    Set $CSA_PATH to point to the root of a checkout of https://github.com/rick/CSA\n"
   exit 1
 end
 
 input_file = ARGV.shift or usage
 output_file = ARGV.shift or usage
+csa_path = ENV['CSA_PATH'] or usage
+
 working_directory = Dir.mktmpdir
 
+# Generate the augmented graph
 augmentor = GraphAugmentor.new
 augmentor.process input_file, working_directory
 source_nodes = augmentor.problem_source_count
 total_nodes = augmentor.problem_node_count
 
-# augmentor.results_path is input file for solver
-# output file for solver should be in working_dirctory
+# Run the CSA solver on the augmented graph
+system("cd #{working_directory} && #{csa_path}/csa/prec_costs/csa_s_qm < #{augmentor.results_path}")
 
-system("cd #{working_directory} && /Users/rick/git/CSA/csa/prec_costs/csa_s_qm < #{augmentor.results_path}")
-# TODO: run solver here
-
+# De-augment the computed matching
 MatchingTranslator.process source_nodes, total_nodes, File.join(working_directory, "output.flow"), output_file
-
 puts "generated output file in [#{output_file}]"
