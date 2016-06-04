@@ -158,7 +158,6 @@ class DimacsGraph
   #
   # (Currently only tracks node counts, but could track individual nodes.)
   def register_seen_node(node_id)
-    puts "registered node [#{node_id}] at line [#{current_line}]" if $DEBUGME
     @seen_nodes ||= 0
     @seen_nodes += 1
   end
@@ -172,26 +171,68 @@ class DimacsGraph
     line_error "Destination node is outside max node range (#{problem_node_count})" if dest > problem_node_count
 
     # add original arc line to output arc list (s -> d), with original weight w
-    output_arc source, dest + problem_source_count, weight
+    output_arc adjusted_source(source), adjusted_destination(dest), weight
 
-    # if source has not been mirrored as an augmented node yet
-    augmented_node(source + problem_source_count) do # add (source+n) as a known augmented node
-      # do not add (source+n) to the output node source list (because it is only a destination)
+    # Add source as a known augmented node. Do not add augmented source node
+    # to the output node source list (because it is only a destination).
+    augmented_node(source_as_augmented_node(source)) do
       # add a high-cost arc from source to augmented source: source -> source + n
-      output_arc source, source + problem_source_count, high_cost
+      output_arc adjusted_source(source), source_as_augmented_node(source), high_cost
     end
 
-    # if dest has not been mirrored as an augmented node yet
-    augmented_node(dest) do  # add (dest) as a known augmented node
+    # If dest has not been mirrored as an augmented node yet, create a mirror-
+    # image node for it.
+    augmented_node(dest_as_augmented_node(dest)) do
       # add (dest) to the output source list
-      output_node dest
+      output_node dest_as_augmented_node(dest)
 
       # add a high-cost arc from augmented node (dest) to original dest node (d + n)
-      output_arc dest, dest + problem_source_count, high_cost
+      output_arc dest_as_augmented_node(dest), adjusted_destination(dest), high_cost
     end
 
     # add an arc from augmented source (dest+n) to augmented dest (source+n)
-    output_arc dest, source + problem_source_count, weight
+    output_arc dest_as_augmented_node(dest), source_as_augmented_node(source), weight
+  end
+
+  # Compute a node id for the "mirror image" node for an arc source in the
+  # augmented graph.
+  #
+  # The computation is basically that this mirror image will be past all
+  # sources, past all the mirror image nodes for original destinations, and past
+  # all the original destination nodes. So, "node_id + problem_source_count +
+  # 2 * destination count", but destination count is simply, "problem_node_count -
+  # problem_source_count", and we simplify terms.
+  def source_as_augmented_node(node_id)
+    node_id + 2 * problem_node_count - problem_source_count
+  end
+
+  # Compute a node id for the "mirror image" node for an arc destination in the
+  # augmented graph.
+  #
+  # The computation here is a no-op, since the offset of original destination nodes
+  # from source nodes is exactly the offset of augmented destination nodes in
+  # the augmented graph: because we are forced to list all sources contiguously.
+  def dest_as_augmented_node(node_id)
+    node_id
+  end
+
+  # Compute a new node id for a source node. Since our original source nodes
+  # appear in the same order in the augmented graph, this is a no-op, and is
+  # included here to improve readability of the calling code.
+  def adjusted_source(node_id)
+    node_id
+  end
+
+  # Compute a new node id for a destination node. This just offsets the original
+  # destination node's node id by sufficient amount to account for keeping all
+  # source nodes (original and augmented) contiguous in the output file.
+  #
+  # The computation is basically "how far into the original list of destination
+  # nodes where you? (node_id - problem_source_count) offset by the size of the
+  # augmented source list (which is has size: problem_source_count +
+  # problem_destination count == problem_node_count)
+  def adjusted_destination(node_id)
+    node_id - problem_source_count + problem_node_count
   end
 
   # What do we output for a high cost node?
