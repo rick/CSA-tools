@@ -146,25 +146,41 @@ class DimacsGraph
     line_error "Destination node is outside max node range (#{problem_node_count})" if dest > problem_node_count
 
     # add original arc line to output arc list (s -> d), with original weight w
+    # TODO: compute problem_source_count
+    # TODO: output_arc source, dest + problem_source_count, weight
     output_arc source, dest, weight
 
     # if source has not been mirrored as an augmented node yet
+    # TODO: augmented_node(source + problem_source_count)
     augmented_node(source + problem_node_count) do # add (source+n) as a known augmented node
       # do not add (source+n) to the output node source list (because it is only a destination)
       # add a high-cost arc from source to augmented source: source -> source + n
+      # TODO: output_arc source, source + problem_source_count, high_cost
       output_arc source, source + problem_node_count, high_cost
     end
 
+    original:
+    1 2 3 4 | 5 6 7
+    augmented:
+    1 2 3 4 5 6 7 | 9 10 11 12 13 14 15
+
+    a 1 5 -> a 1 9
+    a 4 7 -> a 4 11
+
     # if dest has not been mirrored as an augmented node yet
+    # TODO: augmented_node(dest) do
     augmented_node(dest + problem_node_count) do  # add (dest+n) as a known augmented node
       # add (dest+n) to the output source list
+      # TODO: output_node dest
       output_node dest + problem_node_count
 
       # add a high-cost arc from augmented node (d+n) to original dest node (d): d+n -> d
+      # TODO: output_arc dest, dest + problem_source_count, high_cost
       output_arc dest + problem_node_count, dest, high_cost
     end
 
     # add an arc from augmented source (dest+n) to augmented dest (source+n)
+    # TODO: output_arc dest, source + problem_source_count, weight
     output_arc dest + problem_node_count, source + problem_node_count, weight
   end
 
