@@ -5,7 +5,7 @@ c nodes 3
 c sources 2
 n 1
 n 2
-n 6
+n 3
 a 1 4 5
 a 2 4 10
 a 1 5 1000000000
