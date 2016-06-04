@@ -19,12 +19,13 @@ $ script/setup
 $ export CSA_PATH=`pwd` # used by generate_matching
 $ cd ..
 $ git clone https://github.com/rick/CSA-tools
+$ cd CSA-tools
 $ bundle install
 $ bundle exec bin/generate_matching spec/fixtures/10-node-graph.txt solution-to-10-node-matching.txt
 ```
 
 ```
-Wrote augmented graph file: /var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-35584-jwfkqp/augmented_graph.txt
+Wrote augmented graph file: /var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-36664-155kjni/augmented_graph.txt
 ===== Precise costs; Stack ordering; Quick minima; NUM_BEST = 3 =====
 ==========================================================================
 |>  n = 20,  m = 50,  sc_f = 10
@@ -33,7 +34,7 @@ Wrote augmented graph file: /var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20
 |>                   180 double pushes, 470 pushes
 |>   110 list rebuilds, 0 full scans, 180 avoided scans
 ==========================================================================
-Processing matching file [/var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-35584-jwfkqp/output.flow]. Original problem had 5 source nodes and 10 total nodes...
+Processing matching file [/var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-36664-155kjni/output.flow]. Original problem had 5 source nodes and 10 total nodes...
 Keeping match [1, 13, 18] -> [1, 8, 18]
 Keeping match [2, 14, 29] -> [2, 9, 29]
 Keeping match [3, 11, 36] -> [3, 6, 36]
@@ -50,11 +51,11 @@ generated output file in [solution-to-10-node-matching.txt]
 
 ```
 $ cat solution-to-10-node-matching.txt
-f 1 13 18
-f 2 14 29
-f 3 11 36
-f 4 15 410
-f 5 12 57
+f 1 8 18
+f 2 9 29
+f 3 6 36
+f 4 10 410
+f 5 7 57
 ```
 
 
