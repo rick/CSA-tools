@@ -1,6 +1,6 @@
 class DimacsGraph
   attr_reader :silent, :file, :output_dir, :current_line, :line_count
-  attr_reader :problem_node_count, :problem_arc_count
+  attr_reader :problem_source_count, :problem_node_count, :problem_arc_count
   attr_reader :final_node_count, :final_arc_count
   attr_reader :seen_nodes, :seen_arcs
   attr_reader :results_path
@@ -26,6 +26,8 @@ class DimacsGraph
     raise ArgumentError, "cannot find output directory [#{output_dir}]" unless File.directory?(output_dir)
     @file, @output_dir = graph_file, output_dir
 
+    @problem_source_count = extract_problem_source_count
+
     File.open(file) do |f|
       f.each_line do |line|
         track_line line
@@ -47,6 +49,29 @@ class DimacsGraph
 
     validate_processed_file # can throw exceptions
     merge_output_files
+  end
+
+  def extract_problem_source_count
+    node_line_seen      = false
+    highest_node_number = 0
+
+    File.open(file) do |f|
+      f.each_line do |line|
+        if node_line_seen
+          return highest_node_number unless line =~ /^n\s+(\d+)/i
+          candidate = $1.to_i
+          highest_node_number = candidate if candidate > highest_node_number
+        else
+          if line =~ /^n\s+(\d+)/i
+            node_line_seen = true
+            highest_node_number = $1.to_i
+          end
+        end
+      end
+    end
+
+    raise "No node lines in file [#{file}]" unless node_line_seen
+    highest_node_number
   end
 
   # Raise an error message, including the current line and line offset on the
@@ -133,6 +158,7 @@ class DimacsGraph
   #
   # (Currently only tracks node counts, but could track individual nodes.)
   def register_seen_node(node_id)
+    puts "registered node [#{node_id}] at line [#{current_line}]" if $DEBUGME
     @seen_nodes ||= 0
     @seen_nodes += 1
   end
@@ -146,42 +172,26 @@ class DimacsGraph
     line_error "Destination node is outside max node range (#{problem_node_count})" if dest > problem_node_count
 
     # add original arc line to output arc list (s -> d), with original weight w
-    # TODO: compute problem_source_count
-    # TODO: output_arc source, dest + problem_source_count, weight
-    output_arc source, dest, weight
+    output_arc source, dest + problem_source_count, weight
 
     # if source has not been mirrored as an augmented node yet
-    # TODO: augmented_node(source + problem_source_count)
-    augmented_node(source + problem_node_count) do # add (source+n) as a known augmented node
+    augmented_node(source + problem_source_count) do # add (source+n) as a known augmented node
       # do not add (source+n) to the output node source list (because it is only a destination)
       # add a high-cost arc from source to augmented source: source -> source + n
-      # TODO: output_arc source, source + problem_source_count, high_cost
-      output_arc source, source + problem_node_count, high_cost
+      output_arc source, source + problem_source_count, high_cost
     end
 
-    original:
-    1 2 3 4 | 5 6 7
-    augmented:
-    1 2 3 4 5 6 7 | 9 10 11 12 13 14 15
-
-    a 1 5 -> a 1 9
-    a 4 7 -> a 4 11
-
     # if dest has not been mirrored as an augmented node yet
-    # TODO: augmented_node(dest) do
-    augmented_node(dest + problem_node_count) do  # add (dest+n) as a known augmented node
-      # add (dest+n) to the output source list
-      # TODO: output_node dest
-      output_node dest + problem_node_count
+    augmented_node(dest) do  # add (dest) as a known augmented node
+      # add (dest) to the output source list
+      output_node dest
 
-      # add a high-cost arc from augmented node (d+n) to original dest node (d): d+n -> d
-      # TODO: output_arc dest, dest + problem_source_count, high_cost
-      output_arc dest + problem_node_count, dest, high_cost
+      # add a high-cost arc from augmented node (dest) to original dest node (d + n)
+      output_arc dest, dest + problem_source_count, high_cost
     end
 
     # add an arc from augmented source (dest+n) to augmented dest (source+n)
-    # TODO: output_arc dest, source + problem_source_count, weight
-    output_arc dest + problem_node_count, source + problem_node_count, weight
+    output_arc dest, source + problem_source_count, weight
   end
 
   # What do we output for a high cost node?
@@ -247,7 +257,7 @@ class DimacsGraph
   def validate_processed_file
     raise "No problem line found" unless seen_problem_line?
     raise "Seen node count [#{seen_nodes}] does not match computed [#{final_node_count}]" unless seen_nodes == final_node_count
-    raise "Seen node count [#{seen_arcs}] does not match computed [#{final_arc_count}]" unless seen_arcs == final_arc_count
+    raise "Seen arc count [#{seen_arcs}] does not match computed [#{final_arc_count}]" unless seen_arcs == final_arc_count
   end
 
   # Close all open output files.
