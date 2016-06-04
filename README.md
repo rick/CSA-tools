@@ -8,7 +8,7 @@ Included here are the following:
 
  - [generate_augmented_graph](https://github.com/rick/CSA-tools/blob/master/bin/generate_augmented_graph) - command-line tooling to take a weighted bipartite graph, contained in a Dimacs-format graph file, and produce an augmented graph in another Dimacs-formatted graph file. The augmented graph is guaranteed to have a perfect matching.
 
- - [deaugment_matching](https://github.com/rick/CSA-tools/blob/master/bin/deagument_matching) - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
+ - [deaugment_matching](https://github.com/rick/CSA-tools/blob/master/bin/deaugment_matching) - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
 
 ### Usage
 
@@ -68,7 +68,7 @@ $ rake
 
 ### Perfect Matchings
 
-CSA presumes that the graph provided as input contains a perfect matching. If no such matching exists the solver will either not terminate, or can produce a non-optimal matching. (There are notes in the code to the effect that it would be possible to modify the solver to deal with this case, but that work was apparently never undertaken)
+CSA presumes that the graph provided as input contains a perfect matching. If no such matching exists the solver will either not terminate, or can produce a non-optimal matching. (There are notes in the code to the effect that it would be possible to modify the solver to deal with this case, but that work was apparently never undertaken.)
 
 In conversations with Andrew V. Golberg, he provided an algorithm for converting a bipartite graph which might not have a perfect matching into a graph which will have a perfect matching, and from which a solution to the perfect assignment problem on the augmented graph can be transformed into a maximum cardinality minimum cost matching on the original graph.
 
