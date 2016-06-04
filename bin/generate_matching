@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+#
+# Given a DIMACS-format file for an arbitrary weighted bipartite graph,  write
+# out another DIMACS-format file for the augmented version of the  graph --
+# guaranteed to have a perfect minimum weighted bipartite matching.
+#
+# Then, run the CSA solver on the augmented graph file, generating a
+# DIMACS-format flow file containing the computed matching on the augmented
+# graph.
+#
+# Finally, convert the matching on the augmented graph to a matching on the
+# original graph, and output the matching in DIMACS format to the specified
+# output file.
+#
+
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
+
+require "tmpdir"
+require "graph_augmentor"
+require "matching_translator"
+
+def usage
+  puts "usage: #{$0} <input file> <output file>\n
+    Set $CSA_PATH to point to the root of a checkout of https://github.com/rick/CSA\n"
+  exit 1
+end
+
+input_file = ARGV.shift or usage
+output_file = ARGV.shift or usage
+csa_path = ENV['CSA_PATH'] or usage
+
+working_directory = Dir.mktmpdir
+
+# Generate the augmented graph
+augmentor = GraphAugmentor.new
+augmentor.process input_file, working_directory
+source_nodes = augmentor.problem_source_count
+total_nodes = augmentor.problem_node_count
+
+# Run the CSA solver on the augmented graph
+system("cd #{working_directory} && #{csa_path}/csa/prec_costs/csa_s_qm < #{augmentor.results_path}")
+
+# De-augment the computed matching
+MatchingTranslator.process source_nodes, total_nodes, File.join(working_directory, "output.flow"), output_file
+puts "generated output file in [#{output_file}]"

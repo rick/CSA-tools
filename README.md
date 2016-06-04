@@ -4,9 +4,11 @@ This is a set of supplementary tools for use with [Andrew Goldberg's CSA](https:
 
 Included here are the following:
 
+ - [generate_matching](https://github.com/rick/CSA-tools/blob/master/bin/generate_matching) - The main driver script. Take a [DIMACS-format](https://github.com/rick/CSA-tools/blob/master/docs/dimacs_file_format.pdf) graph file containing a weighted bipartite graph, augment the graph, run the CSA solver, and deaugment the resulting matching. I.e., solve a matching, doing whatever you have to do behind the scenes.
+
  - [generate_augmented_graph](https://github.com/rick/CSA-tools/blob/master/bin/generate_augmented_graph) - command-line tooling to take a weighted bipartite graph, contained in a Dimacs-format graph file, and produce an augmented graph in another Dimacs-formatted graph file. The augmented graph is guaranteed to have a perfect matching.
 
- - [convert_matching_to_original_graph](https://github.com/rick/CSA-tools/blob/master/bin/convert_matching_to_original_graph) **TODO** - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
+ - [deaugment_matching](https://github.com/rick/CSA-tools/blob/master/bin/convert_matching_to_original_graph) - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
 
 ### Perfect Matchings
 

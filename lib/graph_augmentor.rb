@@ -1,11 +1,11 @@
-class DimacsGraph
+class GraphAugmentor
   attr_reader :silent, :file, :output_dir, :current_line, :line_count
-  attr_reader :problem_node_count, :problem_arc_count
+  attr_reader :problem_source_count, :problem_node_count, :problem_arc_count
   attr_reader :final_node_count, :final_arc_count
   attr_reader :seen_nodes, :seen_arcs
   attr_reader :results_path
 
-  # Process a DimacsGraph file and generate an augmented graph file.
+  # Process a GraphAugmentor file and generate an augmented graph file.
   def self.process(graph_file, output_dir, silent = false)
     processor = self.new(silent)
     processor.process graph_file, output_dir
@@ -25,6 +25,8 @@ class DimacsGraph
     raise ArgumentError, "process expects a graph file and an output path" unless graph_file && output_dir
     raise ArgumentError, "cannot find output directory [#{output_dir}]" unless File.directory?(output_dir)
     @file, @output_dir = graph_file, output_dir
+
+    @problem_source_count = extract_problem_source_count
 
     File.open(file) do |f|
       f.each_line do |line|
@@ -47,6 +49,29 @@ class DimacsGraph
 
     validate_processed_file # can throw exceptions
     merge_output_files
+  end
+
+  def extract_problem_source_count
+    node_line_seen      = false
+    highest_node_number = 0
+
+    File.open(file) do |f|
+      f.each_line do |line|
+        if node_line_seen
+          return highest_node_number unless line =~ /^n\s+(\d+)/i
+          candidate = $1.to_i
+          highest_node_number = candidate if candidate > highest_node_number
+        else
+          if line =~ /^n\s+(\d+)/i
+            node_line_seen = true
+            highest_node_number = $1.to_i
+          end
+        end
+      end
+    end
+
+    raise "No node lines in file [#{file}]" unless node_line_seen
+    highest_node_number
   end
 
   # Raise an error message, including the current line and line offset on the
@@ -146,33 +171,75 @@ class DimacsGraph
     line_error "Destination node is outside max node range (#{problem_node_count})" if dest > problem_node_count
 
     # add original arc line to output arc list (s -> d), with original weight w
-    output_arc source, dest, weight
+    output_arc adjusted_source(source), adjusted_destination(dest), weight
 
-    # if source has not been mirrored as an augmented node yet
-    augmented_node(source + problem_node_count) do # add (source+n) as a known augmented node
-      # do not add (source+n) to the output node source list (because it is only a destination)
+    # Add source as a known augmented node. Do not add augmented source node
+    # to the output node source list (because it is only a destination).
+    augmented_node(source_as_augmented_node(source)) do
       # add a high-cost arc from source to augmented source: source -> source + n
-      output_arc source, source + problem_node_count, high_cost
+      output_arc adjusted_source(source), source_as_augmented_node(source), unmatchable_cost
     end
 
-    # if dest has not been mirrored as an augmented node yet
-    augmented_node(dest + problem_node_count) do  # add (dest+n) as a known augmented node
-      # add (dest+n) to the output source list
-      output_node dest + problem_node_count
+    # If dest has not been mirrored as an augmented node yet, create a mirror-
+    # image node for it.
+    augmented_node(dest_as_augmented_node(dest)) do
+      # add (dest) to the output source list
+      output_node dest_as_augmented_node(dest)
 
-      # add a high-cost arc from augmented node (d+n) to original dest node (d): d+n -> d
-      output_arc dest + problem_node_count, dest, high_cost
+      # add a high-cost arc from augmented node (dest) to original dest node (d + n)
+      output_arc dest_as_augmented_node(dest), adjusted_destination(dest), unmatchable_cost
     end
 
     # add an arc from augmented source (dest+n) to augmented dest (source+n)
-    output_arc dest + problem_node_count, source + problem_node_count, weight
+    output_arc dest_as_augmented_node(dest), source_as_augmented_node(source), weight
+  end
+
+  # Compute a node id for the "mirror image" node for an arc source in the
+  # augmented graph.
+  #
+  # The computation is basically that this mirror image will be past all
+  # sources, past all the mirror image nodes for original destinations, and past
+  # all the original destination nodes. So, "node_id + problem_source_count +
+  # 2 * destination count", but destination count is simply, "problem_node_count -
+  # problem_source_count", and we simplify terms.
+  def source_as_augmented_node(node_id)
+    node_id + 2 * problem_node_count - problem_source_count
+  end
+
+  # Compute a node id for the "mirror image" node for an arc destination in the
+  # augmented graph.
+  #
+  # The computation here is a no-op, since the offset of original destination nodes
+  # from source nodes is exactly the offset of augmented destination nodes in
+  # the augmented graph: because we are forced to list all sources contiguously.
+  def dest_as_augmented_node(node_id)
+    node_id
+  end
+
+  # Compute a new node id for a source node. Since our original source nodes
+  # appear in the same order in the augmented graph, this is a no-op, and is
+  # included here to improve readability of the calling code.
+  def adjusted_source(node_id)
+    node_id
+  end
+
+  # Compute a new node id for a destination node. This just offsets the original
+  # destination node's node id by sufficient amount to account for keeping all
+  # source nodes (original and augmented) contiguous in the output file.
+  #
+  # The computation is basically "how far into the original list of destination
+  # nodes where you? (node_id - problem_source_count) offset by the size of the
+  # augmented source list (which is has size: problem_source_count +
+  # problem_destination count == problem_node_count)
+  def adjusted_destination(node_id)
+    node_id - problem_source_count + problem_node_count
   end
 
   # What do we output for a high cost node?
   #
   # TODO: this should be configurable by the caller
-  def high_cost
-    1000000000
+  def unmatchable_cost
+    -1000000000
   end
 
   # Allow registering new "augmented nodes".
@@ -231,7 +298,7 @@ class DimacsGraph
   def validate_processed_file
     raise "No problem line found" unless seen_problem_line?
     raise "Seen node count [#{seen_nodes}] does not match computed [#{final_node_count}]" unless seen_nodes == final_node_count
-    raise "Seen node count [#{seen_arcs}] does not match computed [#{final_arc_count}]" unless seen_arcs == final_arc_count
+    raise "Seen arc count [#{seen_arcs}] does not match computed [#{final_arc_count}]" unless seen_arcs == final_arc_count
   end
 
   # Close all open output files.
