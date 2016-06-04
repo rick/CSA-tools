@@ -8,7 +8,62 @@ Included here are the following:
 
  - [generate_augmented_graph](https://github.com/rick/CSA-tools/blob/master/bin/generate_augmented_graph) - command-line tooling to take a weighted bipartite graph, contained in a Dimacs-format graph file, and produce an augmented graph in another Dimacs-formatted graph file. The augmented graph is guaranteed to have a perfect matching.
 
- - [deaugment_matching](https://github.com/rick/CSA-tools/blob/master/bin/convert_matching_to_original_graph) - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
+ - [deaugment_matching](https://github.com/rick/CSA-tools/blob/master/bin/deagument_matching) - command-line tooling to take a CSA matching on an augmented graph and convert that matching to the analogous matching on the original (unaugmented) graph.
+
+### Usage
+
+```
+$ git clone https://github.com/rick/CSA
+$ cd CSA
+$ script/setup
+$ export CSA_PATH=`pwd` # used by generate_matching
+$ cd ..
+$ git clone https://github.com/rick/CSA-tools
+$ bundle install
+$ bundle exec bin/generate_matching spec/fixtures/10-node-graph.txt solution-to-10-node-matching.txt
+```
+
+```
+Wrote augmented graph file: /var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-35584-jwfkqp/augmented_graph.txt
+===== Precise costs; Stack ordering; Quick minima; NUM_BEST = 3 =====
+==========================================================================
+|>  n = 20,  m = 50,  sc_f = 10
+|>   cost             -1100,    time      0.000 seconds
+|>   11 refines:     0%     290 relabelings
+|>                   180 double pushes, 470 pushes
+|>   110 list rebuilds, 0 full scans, 180 avoided scans
+==========================================================================
+Processing matching file [/var/folders/r3/60vtc6hx3yq29ny76xms5bym0000gp/T/d20160604-35584-jwfkqp/output.flow]. Original problem had 5 source nodes and 10 total nodes...
+Keeping match [1, 13, 18] -> [1, 8, 18]
+Keeping match [2, 14, 29] -> [2, 9, 29]
+Keeping match [3, 11, 36] -> [3, 6, 36]
+Keeping match [4, 15, 410] -> [4, 10, 410]
+Keeping match [5, 12, 57] -> [5, 7, 57]
+Discarding match [6, 16, 16]
+Discarding match [7, 20, 57]
+Discarding match [8, 18, 38]
+Discarding match [9, 17, 29]
+Discarding match [10, 19, 410]
+generated output file in [solution-to-10-node-matching.txt]
+```
+
+
+```
+$ cat solution-to-10-node-matching.txt
+f 1 13 18
+f 2 14 29
+f 3 11 36
+f 4 15 410
+f 5 12 57
+```
+
+
+### Running tests
+
+```
+$ bundle install
+$ rake
+```
 
 ### Perfect Matchings
 
@@ -28,3 +83,5 @@ An illustration may help:
 ![](docs/images/augmented-matching.png?raw=true)
 
 From the matching on the augmented graph, we can take those original nodes from `G` which matched with other original nodes from `G` as the desired matching. Note that nodes from `G` which matched via high-cost edges (necessarily with their complement nodes in the flipped graph) are unmatched nodes in the solution.
+
+The `generate_augmented_graph` script creates an augmented graph from an input weighted bipartite graph, while `deaugment_matching` will take a matching for an augmented graph, and translate it back to a matching on the original input graph. The `generate_matching` script automates the process of augmenting, running the solver, and deaugmenting the final matching.
