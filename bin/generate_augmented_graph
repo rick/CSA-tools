@@ -10,7 +10,7 @@
 
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
 
-require "dimacs_graph"
+require "graph_augmentor"
 
 def usage
   puts "usage: #{$0} <input file> <output directory>"
@@ -20,4 +20,4 @@ end
 input_file = ARGV.shift or usage
 output_dir = ARGV.shift or usage
 
-DimacsGraph.process input_file, output_dir
+GraphAugmentor.process input_file, output_dir
