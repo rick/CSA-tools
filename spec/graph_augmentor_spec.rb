@@ -2,7 +2,7 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
 
 require "minitest/autorun"
 require "tmpdir"
-require "dimacs_graph"
+require "graph_augmentor"
 
 # Return the path to a named fixture file.
 def fixture_file(name)
@@ -21,65 +21,65 @@ describe "parsing a DIMACS assignment problem graph file" do
 
   it "fails if the specified file cannot be read" do
     assert_raises(Errno::ENOENT) do
-      process = DimacsGraph.process "/non/existent/file", @basedir, silent = true
+      process = GraphAugmentor.process "/non/existent/file", @basedir, silent = true
     end
   end
 
   it "fails if the file does not have a problem line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("no-problem-line.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("no-problem-line.txt"), @basedir, silent = true
     end
   end
 
   it "fails if the file does not have an assignment problem line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("invalid-problem-line.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("invalid-problem-line.txt"), @basedir, silent = true
     end
   end
 
   it "fails if the file contains an unrecognizeable line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("unrecognizeable-line.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("unrecognizeable-line.txt"), @basedir, silent = true
     end
   end
 
   it "fails if the file does not have the number of arcs listed in the problem line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("arc-count-too-low.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("arc-count-too-low.txt"), @basedir, silent = true
     end
 
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("arc-count-too-high.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("arc-count-too-high.txt"), @basedir, silent = true
     end
   end
 
   it "fails if the file does not mention all the nodes listed in the problem line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("node-count-too-low.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("node-count-too-low.txt"), @basedir, silent = true
     end
 
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("node-count-too-high.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("node-count-too-high.txt"), @basedir, silent = true
     end
   end
 
   it "fails if the file mentions a node higher than the count in the problem line" do
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("node-with-index-too-high-on-node-list.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("node-with-index-too-high-on-node-list.txt"), @basedir, silent = true
     end
 
     assert_raises RuntimeError do
-      process = DimacsGraph.process fixture_file("node-with-index-too-high-on-arc-list.txt"), @basedir, silent = true
+      process = GraphAugmentor.process fixture_file("node-with-index-too-high-on-arc-list.txt"), @basedir, silent = true
     end
   end
 
   it "can return the correct number of nodes from the file's problem line" do
-    process = DimacsGraph.process fixture_file("10-node-graph.txt"), @basedir, silent = true
+    process = GraphAugmentor.process fixture_file("10-node-graph.txt"), @basedir, silent = true
     assert_equal 10, process.problem_node_count
   end
 
   it "can return the correct number of arcs from the file's problem line" do
-    process = DimacsGraph.process fixture_file("10-node-graph.txt"), @basedir, silent = true
+    process = GraphAugmentor.process fixture_file("10-node-graph.txt"), @basedir, silent = true
     assert_equal 20, process.problem_arc_count
   end
 
@@ -88,7 +88,7 @@ describe "parsing a DIMACS assignment problem graph file" do
       input_file    = fixture_file("#{path}.txt")
       expected_file = fixture_file("#{path}-augmented.txt")
 
-      process = DimacsGraph.process input_file, @basedir, silent = true
+      process = GraphAugmentor.process input_file, @basedir, silent = true
       expected = normalize_graph_file(File.read(expected_file))
       actual   = normalize_graph_file(File.read(process.results_path))
       assert_equal expected, actual,

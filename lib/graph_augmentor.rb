@@ -1,11 +1,11 @@
-class DimacsGraph
+class GraphAugmentor
   attr_reader :silent, :file, :output_dir, :current_line, :line_count
   attr_reader :problem_source_count, :problem_node_count, :problem_arc_count
   attr_reader :final_node_count, :final_arc_count
   attr_reader :seen_nodes, :seen_arcs
   attr_reader :results_path
 
-  # Process a DimacsGraph file and generate an augmented graph file.
+  # Process a GraphAugmentor file and generate an augmented graph file.
   def self.process(graph_file, output_dir, silent = false)
     processor = self.new(silent)
     processor.process graph_file, output_dir
