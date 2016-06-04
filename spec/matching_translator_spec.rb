@@ -37,7 +37,7 @@ describe "Un-augmenting a DIMACS-format matching solution file" do
     test_cases.keys.each do |which|
       input_file    = fixture_file("#{which}-augmented-match.txt")
       expected_file = fixture_file("#{which}-match.txt")
-      sources, nodes = sizes[which]
+      sources, nodes = test_cases[which]
       process = MatchingTranslator.process sources, nodes, input_file, @outfile, silent = true
       expected = normalize_results(File.read(expected_file))
       actual   = normalize_results(File.read(@outfile))
