@@ -40,7 +40,7 @@ class MatchingTranslator
   def output_flow_arc(source, destination, weight)
     new_source, new_destination, new_weight = translate_flow_arc(source, destination, weight)
     message "Keeping match [#{source}, #{destination}, #{weight}] -> [#{new_source}, #{new_destination}, #{new_weight}]"
-    output_handle.puts "f #{source} #{destination} #{weight}"
+    output_handle.puts "f #{new_source} #{new_destination} #{new_weight}"
   end
 
   # Return the file handle for the problem output working file.
