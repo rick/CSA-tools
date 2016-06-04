@@ -13,12 +13,11 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")))
 require "matching_translator"
 
 def usage
-  puts "usage: #{$0} <input matching file> <original graph file> <output matching file>"
+  puts "usage: #{$0} <input matching file> <output matching file>"
   exit 1
 end
 
-matching_file = ARGV.shift or usage
-graph_file = ARGV.shift or usage
+input_file  = ARGV.shift or usage
 output_file = ARGV.shift or usage
 
-MatchingTranslator.process matching_file, graph_file, output_file
+MatchingTranslator.process input_file, output_file
