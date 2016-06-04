@@ -1,6 +1,6 @@
 ## CSA tools
 
-This is a set of supplementary tools for use with [Andrew Goldberg's CSA](https://github.com/rick/CSA) weighted bipartite matching solver.
+This is a set of supplementary (ruby language) tools for use with [Andrew Goldberg's CSA](https://github.com/rick/CSA) weighted bipartite matching solver.
 
 Included here are the following:
 
@@ -20,6 +20,7 @@ $ export CSA_PATH=`pwd` # used by generate_matching
 $ cd ..
 $ git clone https://github.com/rick/CSA-tools
 $ cd CSA-tools
+$ gem install bundler
 $ bundle install
 $ bundle exec bin/generate_matching spec/fixtures/10-node-graph.txt solution-to-10-node-matching.txt
 ```
